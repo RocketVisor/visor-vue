@@ -1,6 +1,6 @@
 /*!
  * Vue.js v2.6.14
- * (c) 2014-2021 Evan You
+ * (c) 2014-2022 Evan You
  * Released under the MIT License.
  */
 'use strict';
@@ -711,15 +711,15 @@ var uid = 0;
  */
 var Dep = function Dep () {
   this.id = uid++;
-  this.subs = [];
+  this.subs = {};
 };
 
 Dep.prototype.addSub = function addSub (sub) {
-  this.subs.push(sub);
+  this.subs[sub.id] = sub;
 };
 
 Dep.prototype.removeSub = function removeSub (sub) {
-  remove(this.subs, sub);
+  delete this.subs[sub.id];
 };
 
 Dep.prototype.depend = function depend () {
@@ -729,8 +729,10 @@ Dep.prototype.depend = function depend () {
 };
 
 Dep.prototype.notify = function notify () {
+    var this$1 = this;
+
   // stabilize the subscriber list first
-  var subs = this.subs.slice();
+  var subs = Object.keys(this.subs).map(function (key) { return this$1.subs[key]; });
   if (!config.async) {
     // subs aren't sorted in scheduler if not running async
     // we need to sort them now to make sure they fire in correct

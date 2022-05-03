@@ -13,19 +13,19 @@ let uid = 0
 export default class Dep {
   static target: ?Watcher;
   id: number;
-  subs: Array<Watcher>;
+  subs: {[key: string | number]: Watcher};
 
   constructor () {
     this.id = uid++
-    this.subs = []
+    this.subs = {}
   }
 
   addSub (sub: Watcher) {
-    this.subs.push(sub)
+    this.subs[sub.id] = sub
   }
 
   removeSub (sub: Watcher) {
-    remove(this.subs, sub)
+    delete this.subs[sub.id]
   }
 
   depend () {
@@ -36,7 +36,7 @@ export default class Dep {
 
   notify () {
     // stabilize the subscriber list first
-    const subs = this.subs.slice()
+    const subs = Object.keys(this.subs).map(key => this.subs[key])
     if (process.env.NODE_ENV !== 'production' && !config.async) {
       // subs aren't sorted in scheduler if not running async
       // we need to sort them now to make sure they fire in correct

@@ -93,18 +93,6 @@ var isBuiltInTag = makeMap('slot,component', true);
 var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is');
 
 /**
- * Remove an item from an array.
- */
-function remove (arr, item) {
-  if (arr.length) {
-    var index = arr.indexOf(item);
-    if (index > -1) {
-      return arr.splice(index, 1)
-    }
-  }
-}
-
-/**
  * Check whether an object has the property.
  */
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -993,15 +981,15 @@ var uid = 0;
  */
 var Dep = function Dep () {
   this.id = uid++;
-  this.subs = [];
+  this.subs = {};
 };
 
 Dep.prototype.addSub = function addSub (sub) {
-  this.subs.push(sub);
+  this.subs[sub.id] = sub;
 };
 
 Dep.prototype.removeSub = function removeSub (sub) {
-  remove(this.subs, sub);
+  delete this.subs[sub.id];
 };
 
 Dep.prototype.depend = function depend () {
@@ -1011,8 +999,10 @@ Dep.prototype.depend = function depend () {
 };
 
 Dep.prototype.notify = function notify () {
+    var this$1 = this;
+
   // stabilize the subscriber list first
-  var subs = this.subs.slice();
+  var subs = Object.keys(this.subs).map(function (key) { return this$1.subs[key]; });
   if (process.env.NODE_ENV !== 'production' && !config.async) {
     // subs aren't sorted in scheduler if not running async
     // we need to sort them now to make sure they fire in correct
