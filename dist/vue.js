@@ -1,6 +1,6 @@
 /*!
  * Vue.js v2.6.14
- * (c) 2014-2022 Evan You
+ * (c) 2014-2023 Evan You
  * Released under the MIT License.
  */
 (function (global, factory) {
@@ -5861,7 +5861,8 @@
           a.tag === b.tag &&
           a.isComment === b.isComment &&
           isDef(a.data) === isDef(b.data) &&
-          sameInputType(a, b)
+          sameInputType(a, b) &&
+          findScopeId(a) === findScopeId(b)
         ) || (
           isTrue(a.isAsyncPlaceholder) &&
           isUndef(b.asyncFactory.error)
@@ -5876,6 +5877,20 @@
     var typeA = isDef(i = a.data) && isDef(i = i.attrs) && i.type;
     var typeB = isDef(i = b.data) && isDef(i = i.attrs) && i.type;
     return typeA === typeB || isTextInputType(typeA) && isTextInputType(typeB)
+  }
+
+  function findScopeId (node) {
+    if (isDef(node.fnScopeId)) {
+      return node.fnScopeId
+    }
+
+    var ancestor = node;
+    while (ancestor) {
+      if (isDef(ancestor.context) && isDef(ancestor.context.$options._scopeId)) {
+        return ancestor.context.$options._scopeId
+      }
+      ancestor = ancestor.parent;
+    }
   }
 
   function createKeyToOldIdx (children, beginIdx, endIdx) {
